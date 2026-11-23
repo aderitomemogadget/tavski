@@ -1,0 +1,138 @@
+TAVSKI — Instalação no DEV3
+Registo: 23/11/2026
+
+ESTADO
+Publicação HTTPS confirmada com HTTP 200; login e carregamento da interface
+confirmados. A página /tavski/clients abre na imagem enviada após o pedido de
+teste com F5. Não foram verificados todos os percursos nem operações CRUD.
+A ligação Supabase original foi mantida por indicação do proprietário.
+O erro observado anteriormente (clients: HTTP 401 / Failed to load workspace)
+fica pendente. Uma lista vazia não comprova ausência de dados.
+
+ARQUITETURA E REQUISITOS
+React 19, TypeScript, TanStack Start, Vite 7, Nitro e Tailwind CSS 4.
+Ubuntu, Apache com SSL, proxy e proxy_http; Node.js v24.21.0 no servidor.
+Supabase externo fornece autenticação, API e PostgreSQL, com RLS por utilizador.
+Não foi criada uma base de dados local, nem foi feita conversão para MariaDB.
+Há dependências externas de Google Fonts e de imagens de metadados em R2.
+
+CAMINHOS NO SERVIDOR
+URL: https://dev3.memogadget.com/tavski/
+Projeto: /home/www/dev3.memogadget.com/public_html/tavski
+Apache: /etc/apache2/sites-enabled/dev3.memogadget.com-le-ssl.conf
+Serviço: /etc/systemd/system/tavski-dev3.service
+Node dedicado: /opt/tavski/bin/node
+Log Apache: /var/log/apache2/dev3-error.log
+Backups iniciais: /root/tavski-backup-*.tar.gz e /root/dev3-apache-backup-*.conf
+
+COMPILAÇÃO
+Comandos executados na pasta do projeto no servidor:
+  npm exec --yes --package=bun -- bun install --frozen-lockfile
+O comando recusou o lockfile: plugin Lovable 2.23.1 no lock, 2.26.5 no manifesto.
+Foi então executado:
+  npm exec --yes --package=bun -- bun install
+Foram instalados 456 pacotes e atualizado o lockfile no servidor.
+  npm run build
+Saídas: .output/server/index.mjs e .output/public/assets/.
+
+Configuração aplicada em vite.config.ts NO SERVIDOR:
+  import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+  export default defineConfig({
+    vite: { base: "/tavski/" },
+    nitro: { preset: "node-server" },
+    tanstackStart: { server: { entry: "server" } },
+  });
+
+APACHE
+Causa inicial do 403: AH01276; ausência de DirectoryIndex correspondente
+(index.php) e listagem de diretórios desativada. A solução foi publicar o
+build Node, preservando os restantes projetos.
+Regras adicionadas apenas ao VirtualHost HTTPS de dev3.memogadget.com:
+  ProxyPass "/tavski/assets/" "!"
+  Alias "/tavski/assets/" "/home/www/dev3.memogadget.com/public_html/tavski/.output/public/assets/"
+  <Directory "/home/www/dev3.memogadget.com/public_html/tavski/.output/public/assets">
+      AllowOverride None
+      Options -Indexes
+      Require all granted
+  </Directory>
+  ProxyPass "/tavski/" "http://127.0.0.1:3103/tavski/"
+  ProxyPassReverse "/tavski/" "http://127.0.0.1:3103/tavski/"
+A exclusão dos assets deve preceder o ProxyPass geral do Tavski.
+As rotas chegam ao Node; CSS e JavaScript são servidos diretamente pelo Apache.
+Não foram alterados módulos nem configurações globais ou outros VirtualHosts.
+Validar antes de aplicar: apache2ctl -t
+Aplicar: systemctl reload apache2
+O reload relê a configuração do serviço Apache inteiro.
+
+SERVIÇO SYSTEMD
+  [Unit]
+  Description=Tavski DEV3
+  After=network-online.target
+  Wants=network-online.target
+
+  [Service]
+  Type=simple
+  DynamicUser=yes
+  WorkingDirectory=/home/www/dev3.memogadget.com/public_html/tavski
+  ExecStart=/opt/tavski/bin/node --env-file=.env .output/server/index.mjs
+  Environment=NODE_ENV=production
+  Environment=NITRO_HOST=127.0.0.1
+  Environment=NITRO_PORT=3103
+  Restart=on-failure
+  RestartSec=5
+  NoNewPrivileges=yes
+  ProtectSystem=strict
+  ProtectHome=read-only
+  PrivateTmp=yes
+
+  [Install]
+  WantedBy=multi-user.target
+
+Ativado com systemctl enable --now tavski-dev3.service.
+Não depende de SSH e não corre como root. A porta 3103 escuta em loopback.
+Estado: systemctl status tavski-dev3.service --no-pager -l
+Logs: journalctl -u tavski-dev3.service -n 50 --no-pager
+Reiniciar apenas Tavski: systemctl restart tavski-dev3.service
+O executável Node foi copiado do NVM de root; a sua atualização é separada.
+
+VARIÁVEIS, SEM CREDENCIAIS
+Frontend/build: VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.
+Servidor: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY.
+SUPABASE_SERVICE_ROLE_KEY só seria necessária se fosse usado o cliente admin;
+não deve ser colocada em variáveis VITE_* nem no browser.
+O .env recebido inclui também SUPABASE_PROJECT_ID e VITE_SUPABASE_PROJECT_ID.
+Alterações a VITE_* exigem novo build. Não publicar nem versionar o .env.
+As chaves públicas Supabase não conferem acesso de administração.
+
+BASE DE DADOS — PENDENTE
+Tabelas identificadas: clients, projects e products; três migrações existentes
+na pasta supabase/migrations, com políticas RLS baseadas em auth.uid().
+Nenhuma migração foi executada nesta sessão. Não foram acrescentados ficheiros
+.sql. Todo o SQL futuro deve ser fornecido no chat, conforme instrução do utilizador.
+Não foi obtido acesso de administração ao serviço Supabase do cliente.
+Falta validar acesso aos dados, criação/edição/consulta e restantes políticas.
+O redirecionamento de confirmação de email em src/routes/auth.tsx aponta para
+a raiz do domínio e ainda precisa de ser ajustado para /tavski/ se for usado.
+
+FUTURAS ATUALIZAÇÕES VIA GIT
+ATENÇÃO: a configuração Vite e o lockfile foram alterados remotamente por SSH.
+No momento deste registo, o vite.config.ts local ainda tem a configuração
+original. Reconciliar e rever ambos os ficheiros no Git antes do primeiro deploy
+via Git. Não substituir o lockfile remoto pelo original desatualizado.
+Garantir que .env é ignorado e não rastreado antes de qualquer commit.
+Não guardar credenciais no repositório nem fazer git reset/clean no servidor.
+
+Depois de reconciliadas as alterações:
+1. Criar backup fora da pasta pública (código, build e configuração).
+2. Confirmar git status limpo no checkout de publicação e a branch correta.
+3. Atualizar exclusivamente o checkout Tavski com git pull --ff-only.
+4. Na pasta do Tavski: npm exec --yes --package=bun -- bun install --frozen-lockfile
+5. Compilar num diretório de preparação fora da pasta pública, com o ambiente
+   apropriado. Preservar o build em uso até o novo build estar validado.
+6. Publicar o build validado, conservando os assets antigos durante a transição,
+   e executar systemctl restart tavski-dev3.service.
+7. Verificar estado, logs, HTTP, assets, login e atualização de rotas internas.
+8. Só alterar/recarregar Apache quando a configuração dele tiver mudado;
+   fazer backup e apache2ctl -t antes do reload.
+
+Este registo foi criado no repositório local; não foi enviado ao DEV3.
