@@ -1,3 +1,5 @@
+import { useI18n } from "@/lib/i18n";
+import { pt, fr, enGB, es, de } from "date-fns/locale";
 import { useState } from "react";
 import { CalendarIcon, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -7,6 +9,7 @@ import { formatDate, parseIsoDate, toIsoDate, MIN_YEAR, MAX_YEAR } from "@/lib/d
 
 const startMonth = new Date(MIN_YEAR, 0, 1);
 const endMonth = new Date(MAX_YEAR, 11, 31);
+const calendarLocales = { pt, fr, en: enGB, es, de };
 
 /**
  * The single date component used across the whole application.
@@ -30,6 +33,7 @@ export function DateField({
   align?: "start" | "center" | "end";
   clearable?: boolean;
 }) {
+  const { t, language } = useI18n();
   const [open, setOpen] = useState(false);
   const selected = parseIsoDate(value);
 
@@ -52,7 +56,7 @@ export function DateField({
             <span
               role="button"
               tabIndex={-1}
-              aria-label="Clear date"
+              aria-label={t("Clear date")}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -67,6 +71,13 @@ export function DateField({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align={align}>
         <Calendar
+          locale={calendarLocales[language]}
+          labels={{
+            labelNext: () => t("Next month"),
+            labelPrevious: () => t("Previous month"),
+            labelMonthDropdown: () => t("Choose month"),
+            labelYearDropdown: () => t("Choose year"),
+          }}
           mode="single"
           selected={selected}
           defaultMonth={selected ?? new Date()}

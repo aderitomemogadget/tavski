@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { deliveryCountdown } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { ProjectStatus, Department } from "@/lib/mock-data";
@@ -21,6 +22,7 @@ const statusTone: Record<ProjectStatus, { dot: string; text: string }> = {
 };
 
 export function StatusPill({ status }: { status: ProjectStatus }) {
+  const { t } = useI18n();
   const tone = statusTone[status];
   return (
     <span
@@ -30,7 +32,7 @@ export function StatusPill({ status }: { status: ProjectStatus }) {
       )}
     >
       <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />
-      {status}
+      {t(status)}
     </span>
   );
 }
@@ -44,6 +46,7 @@ const deptTone: Record<Department, string> = {
 };
 
 export function DeptBadge({ dept }: { dept: Department }) {
+  const { t } = useI18n();
   return (
     <span
       className={cn(
@@ -51,14 +54,15 @@ export function DeptBadge({ dept }: { dept: Department }) {
         deptTone[dept],
       )}
     >
-      {dept}
+      {t(dept)}
     </span>
   );
 }
 
 /** Day indicator driven by the Production Delivery Date. */
 export function DeliveryBadge({ iso }: { iso?: string }) {
-  const c = deliveryCountdown(iso);
+  const { language } = useI18n();
+  const c = deliveryCountdown(iso, language);
   if (!c) return <span className="text-[11px] text-muted-foreground">—</span>;
   const tone =
     c.tone === "danger"

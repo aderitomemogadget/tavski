@@ -111,8 +111,9 @@ Nenhuma migração foi executada nesta sessão. Não foram acrescentados ficheir
 .sql. Todo o SQL futuro deve ser fornecido no chat, conforme instrução do utilizador.
 Não foi obtido acesso de administração ao serviço Supabase do cliente.
 Falta validar acesso aos dados, criação/edição/consulta e restantes políticas.
-O redirecionamento de confirmação de email em src/routes/auth.tsx aponta para
-a raiz do domínio e ainda precisa de ser ajustado para /tavski/ se for usado.
+O redirecionamento de confirmação de email foi posteriormente ajustado no código
+local para usar import.meta.env.BASE_URL. Exige publicação e configuração dos
+endereços autorizados no Supabase; a confirmação por email não foi testada no serviço real.
 
 FUTURAS ATUALIZAÇÕES VIA GIT
 ATENÇÃO: a configuração Vite e o lockfile foram alterados remotamente por SSH.
@@ -136,3 +137,71 @@ Depois de reconciliadas as alterações:
    fazer backup e apache2ctl -t antes do reload.
 
 Este registo foi criado no repositório local; não foi enviado ao DEV3.
+
+ATUALIZAÇÃO — INTERFACE MULTILÍNGUE (23/11/2026)
+Implementada localmente, ainda não publicada no DEV3.
+Idiomas: Português de Portugal (PT), Francês (FR), Inglês (EN), Espanhol (ES)
+e Alemão (DE). Seletor no login, rodapé do menu lateral e cabeçalho móvel.
+Preferência: localStorage, chave tavski.language, com sincronização entre
+separadores. Na primeira visita usa um idioma suportado do navegador; fallback EN.
+Sem armazenamento disponível, a escolha funciona em memória até recarregar.
+O servidor renderiza inicialmente EN para não partilhar idiomas entre visitantes;
+o navegador aplica a preferência durante a hidratação.
+
+Traduz navegação, títulos do navegador, formulários, botões, avisos, estados,
+departamentos, motivos de perda, transporte, embalagens, contagens e calendários.
+Datas continuam guardadas em ISO; os meses apresentados são traduzidos.
+Dados introduzidos pelo cliente, nomes, comentários e referências são preservados.
+Os valores persistidos de estados e opções continuam nos formatos originais.
+Erros técnicos devolvidos pelo backend podem manter a mensagem original.
+Não exige tabelas, migrações, SQL nem novas dependências de produção.
+
+Validação: TypeScript, build Node com base /tavski/, sete testes automatizados
+e testes no Chrome com respostas Supabase simuladas (sem escrever na DB).
+Verificados: cinco idiomas, reload, rotas internas, formulários, preservação de
+dados, sincronização entre separadores, calendário e seletor em desktop/móvel.
+ESLint sem novas infrações funcionais nos ficheiros alterados; store.tsx mantém
+seis erros no-explicit-any e avisos já existentes. A formatação Prettier foi
+excluída desta comparação; o lint completo do projeto não está limpo.
+Teste reproduzível: node --test tests/i18n.test.cjs
+TypeScript: node node_modules/typescript/bin/tsc --noEmit
+
+Publicação: enviar os fontes alterados e adicionados abaixo, mantendo o
+vite.config.ts e bun.lock já ajustados no DEV3. Não enviar node_modules ou o
+build Windows para Ubuntu. Sem alteração de dependências nesta atualização.
+Fazer backup do build no DEV3, compilar os novos fontes no servidor e publicar
+conforme o procedimento anterior. Reiniciar apenas tavski-dev3.service.
+Não exige alterar/recarregar Apache, PHP ou outros projetos.
+
+FICHEIROS ADICIONADOS NESTA ATUALIZAÇÃO (5)
+src/components/LanguageSelector.tsx
+src/lib/i18n/core.ts
+src/lib/i18n/index.ts
+src/lib/i18n/messages.ts
+tests/i18n.test.cjs
+
+FICHEIROS ALTERADOS NESTA ATUALIZAÇÃO (22)
+INSTALL-DEV3.txt
+src/components/AppLayout.tsx
+src/components/ArchiveHistory.tsx
+src/components/DateField.tsx
+src/components/StatusPill.tsx
+src/components/forms/ClientFormDialog.tsx
+src/components/forms/ProjectFormDialog.tsx
+src/components/ui/calendar.tsx
+src/components/ui/dialog.tsx
+src/lib/dates.ts
+src/lib/store.tsx
+src/routes/__root.tsx
+src/routes/_app.archive.$id.tsx
+src/routes/_app.archive.index.tsx
+src/routes/_app.bottlenecks.index.tsx
+src/routes/_app.clients.$id.tsx
+src/routes/_app.clients.index.tsx
+src/routes/_app.index.tsx
+src/routes/_app.products.$id.tsx
+src/routes/_app.products.index.tsx
+src/routes/_app.timeline.index.tsx
+src/routes/auth.tsx
+
+Nenhum ficheiro foi alterado no servidor durante o desenvolvimento multilíngue.

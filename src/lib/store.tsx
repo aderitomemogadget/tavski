@@ -1,3 +1,4 @@
+import { translateCurrent as t } from "@/lib/i18n";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,7 +103,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ]);
       if (cancelled) return;
       if (e1 || e2 || e3) {
-        toast.error("Failed to load workspace");
+        toast.error(t("Failed to load workspace"));
         setLoading(false);
         return;
       }
@@ -146,7 +147,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase
       .from("clients")
       .upsert({ id: c.id, user_id: uid, data: serializeClient(c) as any });
-    if (error) toast.error(`Save failed: ${error.message}`);
+    if (error) toast.error(t("Save failed: {message}", { message: error.message }));
   }, []);
   const persistProject = useCallback(async (p: Project, uid: string) => {
     const { error } = await supabase.from("projects").upsert({
@@ -156,13 +157,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       archived: !!p.archived,
       data: serializeProject(p) as any,
     });
-    if (error) toast.error(`Save failed: ${error.message}`);
+    if (error) toast.error(t("Save failed: {message}", { message: error.message }));
   }, []);
   const persistProduct = useCallback(async (p: ProductMasterItem, uid: string) => {
     const { error } = await supabase
       .from("products")
       .upsert({ id: p.id, user_id: uid, data: serializeProduct(p) as any });
-    if (error) toast.error(`Save failed: ${error.message}`);
+    if (error) toast.error(t("Save failed: {message}", { message: error.message }));
   }, []);
 
 

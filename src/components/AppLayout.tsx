@@ -1,3 +1,5 @@
+import { useI18n } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, Users, Package, GitBranch, Archive, AlertTriangle, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,7 @@ const nav = [
 ];
 
 export function AppLayout() {
+  const { t } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
@@ -60,12 +63,13 @@ export function AppLayout() {
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-r-full bg-foreground" />
                 )}
                 <Icon className={cn("h-4 w-4 shrink-0", active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground")} />
-                <span>{item.label}</span>
+                <span>{t(item.label)}</span>
               </Link>
             );
           })}
         </nav>
         <div className="p-3 border-t border-sidebar-border">
+          <div className="px-2 pb-3"><LanguageSelector /></div>
           {email && (
             <div className="px-2 pb-1.5 text-[11px] text-muted-foreground truncate" title={email}>
               {email}
@@ -75,8 +79,7 @@ export function AppLayout() {
             onClick={handleSignOut}
             className="w-full flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition-colors"
           >
-            <LogOut className="h-4 w-4" /> Sign out
-          </button>
+            <LogOut className="h-4 w-4" /> {t("Sign out")}{" "}</button>
         </div>
       </aside>
 
@@ -88,12 +91,12 @@ export function AppLayout() {
             </div>
             <span className="font-semibold tracking-tight">Tavski</span>
           </div>
+          <div className="ml-auto"><LanguageSelector /></div>
           <button
             onClick={handleSignOut}
-            className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
-            Sign out
-          </button>
+            {t("Sign out")}{" "}</button>
         </header>
         <main className="flex-1 min-w-0">
           <Outlet />
@@ -113,12 +116,12 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-border bg-background/85 backdrop-blur-md px-6 py-5 flex items-start justify-between gap-4 sticky top-0 z-10">
+    <div className="border-b border-border bg-background/85 backdrop-blur-md px-6 py-5 flex flex-col sm:flex-row items-start justify-between gap-4 sticky top-0 z-10">
       <div className="min-w-0">
         <h1 className="text-[20px] font-semibold tracking-tight leading-tight text-foreground">{title}</h1>
         {subtitle && <p className="mt-1 text-[13px] text-muted-foreground leading-snug">{subtitle}</p>}
       </div>
-      {actions && <div className="shrink-0">{actions}</div>}
+      {actions && <div className="shrink-0 max-w-full [&>div]:flex-wrap">{actions}</div>}
     </div>
   );
 }

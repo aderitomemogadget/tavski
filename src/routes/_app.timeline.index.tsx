@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppLayout";
 import { formatDate } from "@/lib/dates";
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/_app/timeline/")({
 });
 
 function TimelinePage() {
+  const { t } = useI18n();
   const { projects, clients } = useStore();
   const events = projects
     .filter((p) => !p.archived && p.timeline.length > 0)
@@ -25,7 +27,7 @@ function TimelinePage() {
 
   return (
     <>
-      <PageHeader title="Timeline" subtitle="Latest event of each active project, newest first." />
+      <PageHeader title={t("Timeline")} subtitle={t("Latest event of each active project, newest first.")} />
       <div className="px-6 py-5">
         <ol className="relative border-l border-border ml-2">
           {events.map((e, i) => (
@@ -34,7 +36,7 @@ function TimelinePage() {
               <div className="flex flex-wrap items-baseline gap-2 text-sm">
                 <span className="tabular-nums text-muted-foreground w-24">{formatDate(e.date)}</span>
                 <DeptBadge dept={e.department} />
-                <span className="font-medium">{e.status}</span>
+                <span className="font-medium">{t(e.status)}</span>
                 <Link
                   to="/products/$id"
                   params={{ id: e.project.id }}

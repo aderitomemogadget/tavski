@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Dialog,
@@ -47,6 +48,7 @@ export function ProjectFormDialog({
   project?: Project;
   defaultClientId?: string;
 }) {
+  const { t } = useI18n();
   const { clients, products, addProject, updateProject, upsertProductMaster } = useStore();
   const [open, setOpen] = useState(false);
 
@@ -165,14 +167,14 @@ export function ProjectFormDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{project ? "Edit project" : "New project"}</DialogTitle>
+          <DialogTitle>{project ? t("Edit project") : t("New project")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Client">
+            <Field label={t("Client")}>
               <Select value={clientId} onValueChange={setClientId}>
-                <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("Select client")} /></SelectTrigger>
                 <SelectContent>
                   {clients.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.name} · {c.country}</SelectItem>
@@ -180,18 +182,18 @@ export function ProjectFormDialog({
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Country">
+            <Field label={t("Country")}>
               <Input value={selectedClient?.country ?? ""} disabled readOnly />
             </Field>
           </div>
 
           {!project && (
-            <Field label="Initial status">
+            <Field label={t("Initial status")}>
               <Select value={status} onValueChange={(v) => setStatus(v as ProjectStatus)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {PROJECT_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                    <SelectItem key={s} value={s}>{t(s)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -199,59 +201,59 @@ export function ProjectFormDialog({
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Product name">
-              <Input value={product} onChange={(e) => setProduct(e.target.value)} placeholder="Search or type a new name" />
+            <Field label={t("Product name")}>
+              <Input value={product} onChange={(e) => setProduct(e.target.value)} placeholder={t("Search or type a new name")} />
               <Suggestions items={nameMatches} render={(x) => `${x.name} · ${x.sku}`} onPick={applyMaster} />
             </Field>
             <Field label="SKU">
-              <Input value={sku} onChange={(e) => setSku(e.target.value)} placeholder="Search or type a new SKU" />
+              <Input value={sku} onChange={(e) => setSku(e.target.value)} placeholder={t("Search or type a new SKU")} />
               <Suggestions items={skuMatches} render={(x) => `${x.sku} · ${x.name}`} onPick={applyMaster} />
             </Field>
           </div>
 
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Pharmaceutical form">
-              <Input value={pharmaceuticalForm} onChange={(e) => setPharmaceuticalForm(e.target.value)} placeholder="Capsules, tablets, sachets…" />
+            <Field label={t("Pharmaceutical form")}>
+              <Input value={pharmaceuticalForm} onChange={(e) => setPharmaceuticalForm(e.target.value)} placeholder={t("Capsules, tablets, sachets…")} />
             </Field>
-            <Field label="Presentation">
-              <Input value={presentation} onChange={(e) => setPresentation(e.target.value)} placeholder="30 caps / blister x 2…" />
+            <Field label={t("Presentation")}>
+              <Input value={presentation} onChange={(e) => setPresentation(e.target.value)} placeholder={t("30 caps / blister x 2…")} />
             </Field>
           </div>
 
-          <Field label="Manufacturer">
+          <Field label={t("Manufacturer")}>
             <Input value={manufacturer} onChange={(e) => setManufacturer(e.target.value)} />
           </Field>
 
           <div className="grid grid-cols-3 gap-3">
-            <Field label="Manufacturer contact">
+            <Field label={t("Manufacturer contact")}>
               <Input value={manufacturerContact} onChange={(e) => setManufacturerContact(e.target.value)} />
             </Field>
-            <Field label="Manufacturer email">
+            <Field label={t("Manufacturer email")}>
               <Input type="email" value={manufacturerEmail} onChange={(e) => setManufacturerEmail(e.target.value)} />
             </Field>
-            <Field label="Manufacturer WhatsApp">
+            <Field label={t("Manufacturer WhatsApp")}>
               <Input value={manufacturerWhatsapp} onChange={(e) => setManufacturerWhatsapp(e.target.value)} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Lead time (days)">
+            <Field label={t("Lead time (days)")}>
               <Input type="number" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} />
             </Field>
-            <Field label="Production delivery date">
+            <Field label={t("Production delivery date")}>
               <DateField value={deliveryDate} onChange={setDeliveryDate} className="h-9 w-full" />
             </Field>
           </div>
 
-          <Field label="Next action">
+          <Field label={t("Next action")}>
             <Textarea rows={2} value={nextAction} onChange={(e) => setNextAction(e.target.value)} />
           </Field>
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={submit}>{project ? "Save" : "Create"}</Button>
+          <Button variant="ghost" onClick={() => setOpen(false)}>{t("Cancel")}</Button>
+          <Button onClick={submit}>{project ? t("Save") : t("Create")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

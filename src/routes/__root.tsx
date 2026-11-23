@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -6,6 +7,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
@@ -15,21 +17,20 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
+  const { t } = useI18n();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">{t("Page not found")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
+          {t("The page you're looking for doesn't exist or has been moved.")}{" "}</p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go to dashboard
-          </Link>
+            {t("Go to dashboard")}{" "}</Link>
         </div>
       </div>
     </div>
@@ -37,6 +38,7 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -46,8 +48,8 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">This page didn't load</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Something went wrong. Try refreshing.</p>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">{t("This page didn't load")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("Something went wrong. Try refreshing.")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -56,8 +58,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
-          </button>
+            {t("Try again")}{" "}</button>
         </div>
       </div>
     </div>
@@ -94,17 +95,36 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const { language } = useI18n();
   return (
-    <html lang="en">
+    <html lang={language}>
       <head>
         <HeadContent />
       </head>
       <body>
+        <LanguageMetadata />
         {children}
         <Scripts />
       </body>
     </html>
   );
+}
+
+function LanguageMetadata() {
+  const { t } = useI18n();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  useEffect(() => {
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    const path = base && (pathname === base || pathname.startsWith(`${base}/`))
+      ? pathname.slice(base.length) : pathname;
+    const section = path.split("/").filter(Boolean)[0] ?? "";
+    const titles: Record<string, string> = {
+      "": "Dashboard", auth: "Sign in", clients: "Clients", products: "Products",
+      timeline: "Timeline", bottlenecks: "Bottlenecks", archive: "Archive",
+    };
+    document.title = `${t(titles[section] ?? "Page not found")} — Tavski`;
+  }, [pathname, t]);
+  return null;
 }
 
 function RootComponent() {

@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppLayout";
 import { StatusPill } from "@/components/StatusPill";
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/_app/clients/$id")({
 });
 
 function ClientPage() {
+  const { t } = useI18n();
   const { id } = Route.useParams();
   const { clients, projects } = useStore();
   const client = clients.find((c) => c.id === id);
@@ -20,7 +22,7 @@ function ClientPage() {
   if (!client) {
     return (
       <div className="p-10 text-sm text-muted-foreground">
-        Client not found. <Link to="/clients" className="underline">Back to clients</Link>
+        {t("Client not found.")}{" "}<Link to="/clients" className="underline">{t("Back to clients")}</Link>
       </div>
     );
   }
@@ -32,41 +34,41 @@ function ClientPage() {
     <>
       <PageHeader
         title={client.name}
-        subtitle={`${client.country} · Commercial: ${client.commercialResponsible}`}
+        subtitle={t("{country} · Commercial: {name}", { country: client.country, name: client.commercialResponsible })}
         actions={
           <div className="flex gap-2">
             <ClientFormDialog
               client={client}
-              trigger={<Button size="sm" variant="outline"><Pencil className="h-4 w-4 mr-1" /> Edit client</Button>}
+              trigger={<Button size="sm" variant="outline"><Pencil className="h-4 w-4 mr-1" /> {t("Edit client")}</Button>}
             />
             <ProjectFormDialog
               defaultClientId={client.id}
-              trigger={<Button size="sm"><Plus className="h-4 w-4 mr-1" /> New project</Button>}
+              trigger={<Button size="sm"><Plus className="h-4 w-4 mr-1" /> {t("New project")}</Button>}
             />
           </div>
         }
       />
       <div className="px-6 py-5 grid gap-5 lg:grid-cols-3">
-        <Card title="Contact">
+        <Card title={t("Contact")}>
           <dl className="space-y-1.5 text-sm">
-            <Row label="Status" value={client.status ?? "—"} />
-            <Row label="Contact person" value={client.contactPerson} />
-            <Row label="Position" value={client.position} />
-            <Row label="Email" value={client.email} />
-            <Row label="Phone" value={client.phone} />
+            <Row label={t("Status")} value={client.status ? t(client.status) : "—"} />
+            <Row label={t("Contact person")} value={client.contactPerson} />
+            <Row label={t("Position")} value={client.position} />
+            <Row label={t("Email")} value={client.email} />
+            <Row label={t("Phone")} value={client.phone} />
             <Row label="WhatsApp" value={client.whatsapp} />
-            <Row label="Address" value={client.address} />
-            <Row label="Commercial" value={client.commercialResponsible} />
+            <Row label={t("Address")} value={client.address} />
+            <Row label={t("Commercial")} value={client.commercialResponsible} />
           </dl>
           {client.notes && (
             <div className="mt-3 text-sm">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Notes</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{t("Notes")}</div>
               <p className="whitespace-pre-wrap">{client.notes}</p>
             </div>
           )}
         </Card>
 
-        <Card title="Communication channels">
+        <Card title={t("Communication channels")}>
           <ul className="space-y-2 text-sm">
             {client.channels.length === 0 && <li className="text-muted-foreground">—</li>}
             {client.channels.map((ch, i) => {
@@ -74,7 +76,7 @@ function ClientPage() {
               return (
                 <li key={i} className="flex items-center gap-2">
                   <Icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground w-20 text-xs uppercase tracking-wide">{ch.type}</span>
+                  <span className="text-muted-foreground w-20 text-xs uppercase tracking-wide">{t(ch.type)}</span>
                   <span>{ch.value}</span>
                 </li>
               );
@@ -82,7 +84,7 @@ function ClientPage() {
           </ul>
         </Card>
 
-        <Card title="Requirements memory">
+        <Card title={t("Requirements memory")}>
           {client.requirementsMemory.length === 0 ? (
             <p className="text-sm text-muted-foreground">—</p>
           ) : (
@@ -95,20 +97,20 @@ function ClientPage() {
         </Card>
 
         {client.status === "Lost" && (
-          <Card title="Lost client memory" className="lg:col-span-3 border-red-500/30">
+          <Card title={t("Lost client memory")} className="lg:col-span-3 border-red-500/30">
             <dl className="grid gap-2 md:grid-cols-2 text-sm">
-              <Row label="Lost reason" value={client.lostReason} />
-              <Row label="Lost notes" value={client.lostNotes} />
+              <Row label={t("Lost reason")} value={client.lostReason ? t(client.lostReason) : undefined} />
+              <Row label={t("Lost notes")} value={client.lostNotes} />
             </dl>
           </Card>
         )}
 
-        <Card title={`Active projects (${active.length})`} className="lg:col-span-3">
-          <ProjectList items={active} empty="No active projects." />
+        <Card title={t("Active projects ({count})", { count: active.length })} className="lg:col-span-3">
+          <ProjectList items={active} empty={t("No active projects.")} />
         </Card>
 
-        <Card title={`Archived projects (${archived.length})`} className="lg:col-span-3">
-          <ProjectList items={archived} empty="No archived projects." />
+        <Card title={t("Archived projects ({count})", { count: archived.length })} className="lg:col-span-3">
+          <ProjectList items={archived} empty={t("No archived projects.")} />
         </Card>
       </div>
     </>

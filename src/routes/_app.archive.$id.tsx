@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppLayout";
 import { ArchiveHistoryView } from "@/components/ArchiveHistory";
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_app/archive/$id")({
 });
 
 function ArchiveHistoryPage() {
+  const { t } = useI18n();
   const { id } = Route.useParams();
   const { projects, clients } = useStore();
   const p = projects.find((x) => x.id === id && x.archived);
@@ -23,10 +25,9 @@ function ArchiveHistoryPage() {
   if (!p) {
     return (
       <div className="p-10 text-sm text-muted-foreground">
-        Archived project not found.{" "}
+        {t("Archived project not found.")}{" "}
         <Link to="/archive" className="underline">
-          Back to archive
-        </Link>
+          {t("Back to archive")}{" "}</Link>
       </div>
     );
   }
@@ -43,8 +44,7 @@ function ArchiveHistoryPage() {
             {client && " · "}
             {client?.country}
             {client && " · "}
-            {p.sku} · Archived history
-          </>
+            {p.sku} · {t("Archived history")}{" "}</>
         }
       />
       <ArchiveHistoryView p={p} client={client} />

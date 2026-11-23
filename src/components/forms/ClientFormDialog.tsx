@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useState, type ReactNode } from "react";
 import {
   Dialog,
@@ -28,6 +29,7 @@ export function ClientFormDialog({
   trigger: ReactNode;
   client?: Client;
 }) {
+  const { t } = useI18n();
   const { addClient, updateClient } = useStore();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(client?.name ?? "");
@@ -79,71 +81,71 @@ export function ClientFormDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{client ? "Edit client" : "New client"}</DialogTitle>
+          <DialogTitle>{client ? t("Edit client") : t("New client")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Company name"><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
-            <Field label="Country"><Input value={country} onChange={(e) => setCountry(e.target.value)} /></Field>
+            <Field label={t("Company name")}><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
+            <Field label={t("Country")}><Input value={country} onChange={(e) => setCountry(e.target.value)} /></Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Client status">
+            <Field label={t("Client status")}>
               <Select value={status} onValueChange={(v) => setStatus(v as ClientStatus)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CLIENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {CLIENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{t(s)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Commercial responsible">
+            <Field label={t("Commercial responsible")}>
               <Input value={commercial} onChange={(e) => setCommercial(e.target.value)} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Contact person"><Input value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} /></Field>
-            <Field label="Position"><Input value={position} onChange={(e) => setPosition(e.target.value)} /></Field>
+            <Field label={t("Contact person")}><Input value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} /></Field>
+            <Field label={t("Position")}><Input value={position} onChange={(e) => setPosition(e.target.value)} /></Field>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
-            <Field label="Phone"><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
+            <Field label={t("Email")}><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
+            <Field label={t("Phone")}><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
             <Field label="WhatsApp"><Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} /></Field>
           </div>
 
-          <Field label="Address">
+          <Field label={t("Address")}>
             <Textarea rows={2} value={address} onChange={(e) => setAddress(e.target.value)} />
           </Field>
 
-          <Field label="Notes">
+          <Field label={t("Notes")}>
             <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
 
           {status === "Lost" && (
             <div className="rounded-md border border-border p-3 space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lost client</div>
-              <Field label="Lost reason">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("Lost client")}</div>
+              <Field label={t("Lost reason")}>
                 <Select value={lostReason} onValueChange={(v) => setLostReason(v as LostReason)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {LOST_REASONS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    {LOST_REASONS.map((r) => <SelectItem key={r} value={r}>{t(r)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Lost notes">
-                <Textarea rows={3} value={lostNotes} onChange={(e) => setLostNotes(e.target.value)} placeholder="Why didn't this client proceed? Future you will thank present you." />
+              <Field label={t("Lost notes")}>
+                <Textarea rows={3} value={lostNotes} onChange={(e) => setLostNotes(e.target.value)} placeholder={t("Why didn't this client proceed? Future you will thank present you.")} />
               </Field>
             </div>
           )}
 
-          <Field label="Requirements memory (one per line)">
+          <Field label={t("Requirements memory (one per line)")}>
             <Textarea rows={4} value={reqs} onChange={(e) => setReqs(e.target.value)} />
           </Field>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={submit}>{client ? "Save" : "Create"}</Button>
+          <Button variant="ghost" onClick={() => setOpen(false)}>{t("Cancel")}</Button>
+          <Button onClick={submit}>{client ? t("Save") : t("Create")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

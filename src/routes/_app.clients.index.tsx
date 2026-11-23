@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppLayout";
 import { useStore } from "@/lib/store";
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_app/clients/")({
 });
 
 function ClientsList() {
+  const { t } = useI18n();
   const { clients, projects } = useStore();
   const sorted = [...clients].sort((a, b) => {
     const ax = a.createdAt ?? "";
@@ -21,11 +23,11 @@ function ClientsList() {
   return (
     <>
       <PageHeader
-        title="Clients"
-        subtitle="Per-client memory: requirements, channels, active and archived projects."
+        title={t("Clients")}
+        subtitle={t("Per-client memory: requirements, channels, active and archived projects.")}
         actions={
           <ClientFormDialog
-            trigger={<Button size="sm"><Plus className="h-4 w-4 mr-1" /> New client</Button>}
+            trigger={<Button size="sm"><Plus className="h-4 w-4 mr-1" /> {t("New client")}</Button>}
           />
         }
       />
@@ -54,14 +56,14 @@ function ClientsList() {
                   <div className="font-medium">{c.name}</div>
                   <div className="text-xs text-muted-foreground">{c.country}</div>
                 </div>
-                <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${statusTone}`}>{status}</span>
+                <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${statusTone}`}>{t(status)}</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Commercial: {c.commercialResponsible || "—"}</span>
-                <span>{active} active · {archived} archived</span>
+                <span>{t("Commercial:")}{" "}{c.commercialResponsible || "—"}</span>
+                <span>{t("{active} active · {archived} archived", { active, archived })}</span>
               </div>
               {status === "Lost" && c.lostReason && (
-                <div className="mt-2 text-xs text-red-600">Lost: {c.lostReason}</div>
+                <div className="mt-2 text-xs text-red-600">{t("Lost:")}{" "}{t(c.lostReason)}</div>
               )}
             </Link>
           );

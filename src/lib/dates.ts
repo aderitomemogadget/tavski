@@ -1,3 +1,6 @@
+import { getLanguage } from "./i18n";
+import { localeFor, translate, type Language } from "./i18n/core";
+
 // Shared date validation, normalization and formatting for the whole app.
 // One canonical storage format (ISO yyyy-mm-dd) and one display format
 // (DD MMM YYYY) so no screen ever mixes DD/MM/YYYY with YYYY-MM-DD.
@@ -7,11 +10,6 @@ export const MAX_DATE = "2099-12-31";
 
 export const MIN_YEAR = 2020;
 export const MAX_YEAR = 2099;
-
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -90,11 +88,14 @@ export const toIsoDate = (date: Date | undefined | null): string | undefined => 
 };
 
 // Single display format used everywhere: 09 Mar 2026.
-export const formatDate = (iso: string | undefined | null): string => {
+export const formatDate = (iso: string | undefined | null, language: Language = getLanguage()): string => {
   const n = normalizeDateIso(iso);
   if (!n) return "—";
   const [y, m, d] = n.split("-").map(Number);
-  return `${pad(d)} ${MONTHS[m - 1]} ${y}`;
+  const month = new Intl.DateTimeFormat(localeFor(language), {
+    month: "short", timeZone: "UTC",
+  }).format(new Date(Date.UTC(y, m - 1, d)));
+  return `${pad(d)} ${month} ${y}`;
 };
 
 export const todayIso = (): string => toIsoDate(new Date())!;
@@ -127,26 +128,26 @@ export interface Countdown {
 }
 
 // "X days remaining" / "Due today" / "X days overdue"
-export const deliveryCountdown = (iso: string | undefined | null): Countdown | null => {
+export const deliveryCountdown = (iso: string | undefined | null, language: Language = getLanguage()): Countdown | null => {
   const days = daysUntilDate(iso);
   if (days === null) return null;
-  if (days === 0) return { days, label: "Due today", tone: "danger" };
+  if (days === 0) return { days, label: translate("Due today", {}, language), tone: "danger" };
   if (days < 0) {
     const n = Math.abs(days);
-    return { days, label: `${n} day${n === 1 ? "" : "s"} overdue`, tone: "danger" };
+    return { days, label: translate(n === 1 ? "{count} day overdue" : "{count} days overdue", { count: n }, language), tone: "danger" };
   }
   const tone: CountdownTone = days <= 7 ? "danger" : days <= 21 ? "warn" : "neutral";
-  return { days, label: `${days} day${days === 1 ? "" : "s"} remaining`, tone };
+  return { days, label: translate(days === 1 ? "{count} day remaining" : "{count} days remaining", { count: days }, language), tone };
 };
 
 // Reminder / Alert countdown: only today or overdue are surfaced as warnings.
-export const reminderCountdown = (iso: string | undefined | null): Countdown | null => {
+export const reminderCountdown = (iso: string | undefined | null, language: Language = getLanguage()): Countdown | null => {
   const days = daysUntilDate(iso);
   if (days === null) return null;
-  if (days === 0) return { days, label: "Reminder due today", tone: "danger" };
+  if (days === 0) return { days, label: translate("Reminder due today", {}, language), tone: "danger" };
   if (days < 0) {
     const n = Math.abs(days);
-    return { days, label: `${n} day${n === 1 ? "" : "s"} overdue`, tone: "danger" };
+    return { days, label: translate(n === 1 ? "{count} day overdue" : "{count} days overdue", { count: n }, language), tone: "danger" };
   }
-  return { days, label: `${days} day${days === 1 ? "" : "s"} remaining`, tone: "neutral" };
+  return { days, label: translate(days === 1 ? "{count} day remaining" : "{count} days remaining", { count: days }, language), tone: "neutral" };
 };

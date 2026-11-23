@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppLayout";
 import { StatusPill, DeptBadge, DeliveryBadge } from "@/components/StatusPill";
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_app/")({
 });
 
 function Dashboard() {
+  const { t, count } = useI18n();
   const allProjects = useProjects();
   const { clients } = useStore();
   const getClient = (id: string) => clients.find((c) => c.id === id);
@@ -55,12 +57,12 @@ function Dashboard() {
   return (
     <>
       <PageHeader
-        title="Dashboard"
-        subtitle="What's happening, who owns it, where it's stuck."
+        title={t("Dashboard")}
+        subtitle={t("What's happening, who owns it, where it's stuck.")}
         actions={
           <ProjectFormDialog
             trigger={
-              <Button size="sm"><Plus className="h-4 w-4 mr-1" /> New project</Button>
+              <Button size="sm"><Plus className="h-4 w-4 mr-1" /> {t("New project")}</Button>
             }
           />
         }
@@ -68,33 +70,32 @@ function Dashboard() {
 
       <div className="px-6 pt-6 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Stat
-          label="Active projects"
+          label={t("Active projects")}
           value={rows.length}
-          hint={rows.length === 0 ? "Nothing in motion" : `${rows.length - blocked} progressing`}
+          hint={rows.length === 0 ? t("Nothing in motion") : t("{count} progressing", { count: rows.length - blocked })}
         />
         <Stat
-          label="Bottlenecks"
+          label={t("Bottlenecks")}
           value={blocked}
           tone={blocked === 0 ? undefined : "warn"}
-          hint={blocked === 0 ? "All clear" : `${blocked} of ${rows.length} blocked`}
+          hint={blocked === 0 ? t("All clear") : t("{count} of {total} blocked", { count: blocked, total: rows.length })}
         />
       </div>
 
       <section className="px-6 pt-6 pb-8">
         <div className="flex items-baseline gap-2.5 mb-4">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">
-            Attention Required
-          </h2>
+            {t("Attention Required")}{" "}</h2>
           <span className="text-[11px] text-muted-foreground tabular-nums">
-            {attention.length} {attention.length === 1 ? "project" : "projects"}
+            {count("project", attention.length)}
           </span>
         </div>
 
         {attention.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border bg-card/40 px-6 py-14 text-center">
             <div className="mx-auto h-1.5 w-1.5 rounded-full bg-success" />
-            <div className="mt-4 text-[13px] font-medium text-foreground tracking-tight">No active bottlenecks</div>
-            <div className="mt-1 text-[12px] text-muted-foreground">All projects are progressing on schedule.</div>
+            <div className="mt-4 text-[13px] font-medium text-foreground tracking-tight">{t("No active bottlenecks")}</div>
+            <div className="mt-1 text-[12px] text-muted-foreground">{t("All projects are progressing on schedule.")}</div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -123,36 +124,35 @@ function Dashboard() {
                       <StatusPill status={p.status} />
                       {p.bottleneck && <DeptBadge dept={p.bottleneck.department} />}
                     </div>
-                    {p.bottleneck && <Field label="Bottleneck" value={p.bottleneck.description} />}
+                    {p.bottleneck && <Field label={t("Bottleneck")} value={p.bottleneck.description} />}
                     {reminder && (
-                      <AlertBox tone="danger" title={reminderDays === 0 ? "Reminder due today" : "Reminder overdue"}>
+                      <AlertBox tone="danger" title={reminderDays === 0 ? t("Reminder due today") : t("Reminder overdue")}>
                         {formatDate(p.nextActionReminderDate!)}
                         {reminderDays !== 0 && reminderDays !== null && (
-                          <span className="ml-1">· {Math.abs(reminderDays)} day{Math.abs(reminderDays) === 1 ? "" : "s"} overdue</span>
+                          <span className="ml-1">· {t(Math.abs(reminderDays) === 1 ? "{count} day overdue" : "{count} days overdue", { count: Math.abs(reminderDays) })}</span>
                         )}
                       </AlertBox>
                     )}
                     {leadTimeExceeded && (
-                      <AlertBox tone="danger" title="Production delivery overdue">
-                        {formatDate(delivery)} has passed. Confirm status with manufacturer.
-                      </AlertBox>
+                      <AlertBox tone="danger" title={t("Production delivery overdue")}>
+                        {formatDate(delivery)} {t("has passed. Confirm status with manufacturer.")}{" "}</AlertBox>
                     )}
                     {eta7 && etaDays !== Infinity && !leadTimeExceeded && p.nextActionReminderDate && (
-                      <AlertBox tone="danger" title="Delivery in 7 days or less">
-                        Confirm status with manufacturer. {countdown?.label} · {formatDate(delivery)}
+                      <AlertBox tone="danger" title={t("Delivery in 7 days or less")}>
+                        {t("Confirm status with manufacturer.")}{" "}{countdown?.label} · {formatDate(delivery)}
                       </AlertBox>
                     )}
                     {eta14 && !eta7 && (
-                      <AlertBox tone="warn" title="Delivery in 14 days">
-                        Contact manufacturer for production update. {countdown?.label} · {formatDate(delivery)}
+                      <AlertBox tone="warn" title={t("Delivery in 14 days")}>
+                        {t("Contact manufacturer for production update.")}{" "}{countdown?.label} · {formatDate(delivery)}
                       </AlertBox>
                     )}
                     {etaApproaching && !eta14 && (
-                      <AlertBox tone="warn" title="Delivery approaching (21 days)">
-                        Begin production follow-up. {countdown?.label} · {formatDate(delivery)}
+                      <AlertBox tone="warn" title={t("Delivery approaching (21 days)")}>
+                        {t("Begin production follow-up.")}{" "}{countdown?.label} · {formatDate(delivery)}
                       </AlertBox>
                     )}
-                    <Field label="Next action" value={p.nextAction} emphasis />
+                    <Field label={t("Next action")} value={p.nextAction} emphasis />
                   </div>
                   <div className="px-4 py-2.5 border-t border-border bg-muted/30 flex items-center justify-end text-xs text-muted-foreground">
                     <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -167,16 +167,15 @@ function Dashboard() {
 
       <section className="px-6 pb-10">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground mb-4">
-          All active projects
-        </h2>
+          {t("All active projects")}{" "}</h2>
         <div className="rounded-lg border border-border overflow-hidden bg-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-muted-foreground">
                 <tr className="text-left">
-                  <Th>Client</Th><Th>Country</Th><Th>Product</Th><Th>Status</Th>
-                  <Th>Bottleneck</Th><Th>Responsible</Th>
-                  <Th>Next action</Th>
+                  <Th>{t("Client")}</Th><Th>{t("Country")}</Th><Th>{t("Product")}</Th><Th>{t("Status")}</Th>
+                  <Th>{t("Bottleneck")}</Th><Th>{t("Responsible")}</Th>
+                  <Th>{t("Next action")}</Th>
                 </tr>
               </thead>
               <tbody>
@@ -206,7 +205,7 @@ function Dashboard() {
                       </Td>
                       <Td>
                         <div>{p.responsiblePerson}</div>
-                        <div className="text-xs text-muted-foreground">{p.responsibleDepartment}</div>
+                        <div className="text-xs text-muted-foreground">{t(p.responsibleDepartment)}</div>
                       </Td>
                       <Td className="max-w-[260px] text-muted-foreground">{p.nextAction}</Td>
                     </tr>
