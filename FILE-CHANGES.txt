@@ -1,0 +1,146 @@
+TAVSKI — Ficheiros desta reorganização
+
+MOVIDOS: 115 ficheiros existentes para admin/.
+Apenas os ficheiros indicados como editados abaixo mudaram de conteúdo.
+O .env foi preservado localmente em admin/.env, é ignorado e não deve ser enviado por FTP.
+As três migrações SQL existentes foram apenas movidas, sem conteúdo novo.
+
+ADICIONADOS (7)
+FILE-CHANGES.txt
+admin/ADMIN-MIGRATION.txt
+admin/ops/tavski-admin.apache.conf
+admin/ops/tavski-admin.conf
+admin/scripts/configure-admin-apache.mjs
+admin/tests/admin-layout.test.cjs
+index.html
+
+ALTERADOS (10, incluindo os movidos e editados)
+.gitignore
+admin/ACCESS-GATE.txt
+admin/INSTALL-DEV3.txt
+admin/scripts/tavski-access-password.mjs
+admin/src/lib/access-gate.server.ts
+admin/src/lib/error-page.ts
+admin/src/server.ts
+admin/src/start.ts
+admin/tests/access-gate.test.cjs
+admin/vite.config.ts
+
+MAPA COMPLETO DE ORIGEM → DESTINO
+.env -> admin/.env
+.lovable/plan.md -> admin/.lovable/plan.md
+.lovable/project.json -> admin/.lovable/project.json
+.prettierignore -> admin/.prettierignore
+.prettierrc -> admin/.prettierrc
+ACCESS-GATE.txt -> admin/ACCESS-GATE.txt [EDITADO]
+INSTALL-DEV3.txt -> admin/INSTALL-DEV3.txt [EDITADO]
+bun.lock -> admin/bun.lock
+bunfig.toml -> admin/bunfig.toml
+components.json -> admin/components.json
+eslint.config.js -> admin/eslint.config.js
+ops/tavski-access.conf -> admin/ops/tavski-access.conf
+package.json -> admin/package.json
+scripts/tavski-access-password.mjs -> admin/scripts/tavski-access-password.mjs [EDITADO]
+src/components/AccessGateMonitor.tsx -> admin/src/components/AccessGateMonitor.tsx
+src/components/AppLayout.tsx -> admin/src/components/AppLayout.tsx
+src/components/ArchiveHistory.tsx -> admin/src/components/ArchiveHistory.tsx
+src/components/DateField.tsx -> admin/src/components/DateField.tsx
+src/components/LanguageSelector.tsx -> admin/src/components/LanguageSelector.tsx
+src/components/StatusPill.tsx -> admin/src/components/StatusPill.tsx
+src/components/forms/ClientFormDialog.tsx -> admin/src/components/forms/ClientFormDialog.tsx
+src/components/forms/ProjectFormDialog.tsx -> admin/src/components/forms/ProjectFormDialog.tsx
+src/components/ui/accordion.tsx -> admin/src/components/ui/accordion.tsx
+src/components/ui/alert-dialog.tsx -> admin/src/components/ui/alert-dialog.tsx
+src/components/ui/alert.tsx -> admin/src/components/ui/alert.tsx
+src/components/ui/aspect-ratio.tsx -> admin/src/components/ui/aspect-ratio.tsx
+src/components/ui/avatar.tsx -> admin/src/components/ui/avatar.tsx
+src/components/ui/badge.tsx -> admin/src/components/ui/badge.tsx
+src/components/ui/breadcrumb.tsx -> admin/src/components/ui/breadcrumb.tsx
+src/components/ui/button.tsx -> admin/src/components/ui/button.tsx
+src/components/ui/calendar.tsx -> admin/src/components/ui/calendar.tsx
+src/components/ui/card.tsx -> admin/src/components/ui/card.tsx
+src/components/ui/carousel.tsx -> admin/src/components/ui/carousel.tsx
+src/components/ui/chart.tsx -> admin/src/components/ui/chart.tsx
+src/components/ui/checkbox.tsx -> admin/src/components/ui/checkbox.tsx
+src/components/ui/collapsible.tsx -> admin/src/components/ui/collapsible.tsx
+src/components/ui/command.tsx -> admin/src/components/ui/command.tsx
+src/components/ui/context-menu.tsx -> admin/src/components/ui/context-menu.tsx
+src/components/ui/dialog.tsx -> admin/src/components/ui/dialog.tsx
+src/components/ui/drawer.tsx -> admin/src/components/ui/drawer.tsx
+src/components/ui/dropdown-menu.tsx -> admin/src/components/ui/dropdown-menu.tsx
+src/components/ui/form.tsx -> admin/src/components/ui/form.tsx
+src/components/ui/hover-card.tsx -> admin/src/components/ui/hover-card.tsx
+src/components/ui/input-otp.tsx -> admin/src/components/ui/input-otp.tsx
+src/components/ui/input.tsx -> admin/src/components/ui/input.tsx
+src/components/ui/label.tsx -> admin/src/components/ui/label.tsx
+src/components/ui/menubar.tsx -> admin/src/components/ui/menubar.tsx
+src/components/ui/navigation-menu.tsx -> admin/src/components/ui/navigation-menu.tsx
+src/components/ui/pagination.tsx -> admin/src/components/ui/pagination.tsx
+src/components/ui/popover.tsx -> admin/src/components/ui/popover.tsx
+src/components/ui/progress.tsx -> admin/src/components/ui/progress.tsx
+src/components/ui/radio-group.tsx -> admin/src/components/ui/radio-group.tsx
+src/components/ui/resizable.tsx -> admin/src/components/ui/resizable.tsx
+src/components/ui/scroll-area.tsx -> admin/src/components/ui/scroll-area.tsx
+src/components/ui/select.tsx -> admin/src/components/ui/select.tsx
+src/components/ui/separator.tsx -> admin/src/components/ui/separator.tsx
+src/components/ui/sheet.tsx -> admin/src/components/ui/sheet.tsx
+src/components/ui/sidebar.tsx -> admin/src/components/ui/sidebar.tsx
+src/components/ui/skeleton.tsx -> admin/src/components/ui/skeleton.tsx
+src/components/ui/slider.tsx -> admin/src/components/ui/slider.tsx
+src/components/ui/sonner.tsx -> admin/src/components/ui/sonner.tsx
+src/components/ui/switch.tsx -> admin/src/components/ui/switch.tsx
+src/components/ui/table.tsx -> admin/src/components/ui/table.tsx
+src/components/ui/tabs.tsx -> admin/src/components/ui/tabs.tsx
+src/components/ui/textarea.tsx -> admin/src/components/ui/textarea.tsx
+src/components/ui/toggle-group.tsx -> admin/src/components/ui/toggle-group.tsx
+src/components/ui/toggle.tsx -> admin/src/components/ui/toggle.tsx
+src/components/ui/tooltip.tsx -> admin/src/components/ui/tooltip.tsx
+src/hooks/use-mobile.tsx -> admin/src/hooks/use-mobile.tsx
+src/integrations/supabase/auth-attacher.ts -> admin/src/integrations/supabase/auth-attacher.ts
+src/integrations/supabase/auth-middleware.ts -> admin/src/integrations/supabase/auth-middleware.ts
+src/integrations/supabase/client.server.ts -> admin/src/integrations/supabase/client.server.ts
+src/integrations/supabase/client.ts -> admin/src/integrations/supabase/client.ts
+src/integrations/supabase/previewAuthStorage.ts -> admin/src/integrations/supabase/previewAuthStorage.ts
+src/integrations/supabase/types.ts -> admin/src/integrations/supabase/types.ts
+src/lib/access-gate.server.ts -> admin/src/lib/access-gate.server.ts [EDITADO]
+src/lib/access-popup.server.ts -> admin/src/lib/access-popup.server.ts
+src/lib/api/example.functions.ts -> admin/src/lib/api/example.functions.ts
+src/lib/config.server.ts -> admin/src/lib/config.server.ts
+src/lib/dates.ts -> admin/src/lib/dates.ts
+src/lib/error-capture.ts -> admin/src/lib/error-capture.ts
+src/lib/error-page.ts -> admin/src/lib/error-page.ts [EDITADO]
+src/lib/i18n/core.ts -> admin/src/lib/i18n/core.ts
+src/lib/i18n/index.ts -> admin/src/lib/i18n/index.ts
+src/lib/i18n/messages.ts -> admin/src/lib/i18n/messages.ts
+src/lib/lovable-error-reporting.ts -> admin/src/lib/lovable-error-reporting.ts
+src/lib/mock-data.ts -> admin/src/lib/mock-data.ts
+src/lib/store.tsx -> admin/src/lib/store.tsx
+src/lib/utils.ts -> admin/src/lib/utils.ts
+src/routeTree.gen.ts -> admin/src/routeTree.gen.ts
+src/router.tsx -> admin/src/router.tsx
+src/routes/README.md -> admin/src/routes/README.md
+src/routes/__root.tsx -> admin/src/routes/__root.tsx
+src/routes/_app.archive.$id.tsx -> admin/src/routes/_app.archive.$id.tsx
+src/routes/_app.archive.index.tsx -> admin/src/routes/_app.archive.index.tsx
+src/routes/_app.bottlenecks.index.tsx -> admin/src/routes/_app.bottlenecks.index.tsx
+src/routes/_app.clients.$id.tsx -> admin/src/routes/_app.clients.$id.tsx
+src/routes/_app.clients.index.tsx -> admin/src/routes/_app.clients.index.tsx
+src/routes/_app.index.tsx -> admin/src/routes/_app.index.tsx
+src/routes/_app.products.$id.tsx -> admin/src/routes/_app.products.$id.tsx
+src/routes/_app.products.index.tsx -> admin/src/routes/_app.products.index.tsx
+src/routes/_app.timeline.index.tsx -> admin/src/routes/_app.timeline.index.tsx
+src/routes/_app.tsx -> admin/src/routes/_app.tsx
+src/routes/auth.tsx -> admin/src/routes/auth.tsx
+src/server.ts -> admin/src/server.ts [EDITADO]
+src/start.ts -> admin/src/start.ts [EDITADO]
+src/styles.css -> admin/src/styles.css
+supabase/config.toml -> admin/supabase/config.toml
+supabase/migrations/20260720170103_fd0a46c3-c3b8-4417-90a0-3065eac15f36.sql -> admin/supabase/migrations/20260720170103_fd0a46c3-c3b8-4417-90a0-3065eac15f36.sql
+supabase/migrations/20260722160403_81d4dc0e-9e9e-4524-8da2-bfe3552f4259.sql -> admin/supabase/migrations/20260722160403_81d4dc0e-9e9e-4524-8da2-bfe3552f4259.sql
+supabase/migrations/20260730142944_ed9a4e1c-e4f8-4e4b-9069-c06f67bde1dc.sql -> admin/supabase/migrations/20260730142944_ed9a4e1c-e4f8-4e4b-9069-c06f67bde1dc.sql
+tests/access-gate.test.cjs -> admin/tests/access-gate.test.cjs [EDITADO]
+tests/i18n.test.cjs -> admin/tests/i18n.test.cjs
+tsconfig.json -> admin/tsconfig.json
+vite.config.ts -> admin/vite.config.ts [EDITADO]
+
+Nenhuma alteração executada no servidor. node_modules e .output foram apenas relocalizados/regenerados localmente e não devem ser enviados por FTP.

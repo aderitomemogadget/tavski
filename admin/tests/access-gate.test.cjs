@@ -22,8 +22,8 @@ before(async () => {
   config = await cli.createAccessConfig(password);
   replacement = await cli.createAccessConfig("Replacement-test-password-456");
 });
-const makeGate = (overrides = {}) => createAccessGate({ enabled: true, origin, basePath: "/tavski/", trustProxy: true, loadConfig: async () => config, ...overrides });
-const request = (pathname = "clients", options = {}) => new Request(`http://127.0.0.1:3103/tavski/${pathname}`, { ...options, headers: { Accept: "text/html", ...options.headers } });
+const makeGate = (overrides = {}) => createAccessGate({ enabled: true, origin, basePath: "/tavski/admin/", trustProxy: true, loadConfig: async () => config, ...overrides });
+const request = (pathname = "clients", options = {}) => new Request(`http://127.0.0.1:3103/tavski/admin/${pathname}`, { ...options, headers: { Accept: "text/html", ...options.headers } });
 const login = (pw = password, headers = {}) => request("_access", { method: "POST", headers: { Origin: origin, "Content-Type": "application/json", "X-Forwarded-For": "198.51.100.7", ...headers }, body: JSON.stringify({ password: pw }) });
 const cookieFrom = (response) => response.headers.get("set-cookie").split(";")[0];
 
@@ -49,8 +49,8 @@ test("password verification issues a signed, scoped session cookie and permits t
   const response = await gate(login());
   assert.equal(response.status, 200);
   const cookie = response.headers.get("set-cookie");
-  assert.match(cookie, /^__Secure-tavski_access=/);
-  assert.match(cookie, /Path=\/tavski\/; HttpOnly; Secure; SameSite=Strict/);
+  assert.match(cookie, /^__Secure-tavski_admin_access=/);
+  assert.match(cookie, /Path=\/tavski\/admin\/; HttpOnly; Secure; SameSite=Strict/);
   assert.ok(!cookie.includes("Domain=") && !cookie.includes("Max-Age="));
   assert.equal(await gate(request("auth", { headers: { Cookie: cookieFrom(response) } })), null);
   const state = await gate(request("_access", { headers: { Cookie: cookieFrom(response) } }));
@@ -62,6 +62,8 @@ test("tampering, expiry, duplicate cookies and a rotated password invalidate acc
   const gate = makeGate({ now: () => clock });
   const issued = await gate(login());
   const original = cookieFrom(issued);
+  const otherScope = makeGate({ basePath: "/tavski/" });
+  assert.equal((await otherScope(request("auth", { headers: { Cookie: original } }))).status, 401);
   const [name, token] = original.split("=");
   const pieces = token.split(".");
   pieces[0] = Buffer.from(JSON.stringify({ v: 1, iat: 0, exp: 9999999999 })).toString("base64url");

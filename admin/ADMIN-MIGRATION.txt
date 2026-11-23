@@ -1,0 +1,122 @@
+TAVSKI — Landing pública e administração em admin/
+Preparação local: 23/11/2026. Não foram executadas alterações no DEV3.
+
+RESULTADO
+https://dev3.memogadget.com/tavski/          landing pública: apenas TAVSKI
+https://dev3.memogadget.com/tavski/admin/    aplicação existente: popup + login
+
+Na raiz do repositório ficam index.html, .gitignore e o manifesto de alterações.
+A aplicação anterior foi movida para admin/, incluindo src, scripts, ops, testes,
+configurações, documentação e migrações já existentes. Não foi criado SQL novo.
+O .git fica na raiz. O .env local foi preservado em admin/.env e é ignorado pelo
+Git; não enviar o .env local por FTP nem divulgar o seu conteúdo.
+
+O build do admin usa base /tavski/admin/ e Nitro node-server. As rotas internas,
+recursos, monitor do popup, logout e retorno de confirmação de email usam a base
+do build. A landing é HTML estático, sem JavaScript, Supabase ou autenticação.
+O cookie novo chama-se __Secure-tavski_admin_access, tem Path=/tavski/admin/ e
+a assinatura fica vinculada a esse caminho. Os cookies anteriores são ignorados;
+é necessário voltar a introduzir a mesma palavra-passe, que não é alterada.
+
+SERVIDOR
+Pasta pública: /home/www/dev3.memogadget.com/public_html/tavski
+Pasta da aplicação: /home/www/dev3.memogadget.com/public_html/tavski/admin
+O serviço continua a ser tavski-dev3.service, em 127.0.0.1:3103.
+A palavra-passe continua em /etc/tavski/access.json e o access.conf existente
+mantém-se. Não alterar credenciais, PHP, MariaDB ou outros projetos.
+Acrescenta-se apenas o drop-in layout.conf, que muda WorkingDirectory.
+
+O Apache deixa de encaminhar /tavski/ para Node. Serve o index.html da landing
+diretamente e encaminha apenas /tavski/admin/ para Node. Os assets do admin têm
+Alias próprio; os restantes ficheiros da aplicação são recusados no acesso como
+ficheiros estáticos. DirectoryIndex index.html aplica-se apenas ao Tavski.
+
+MIGRAÇÃO POR SSH — UM PASSO DE CADA VEZ
+Seguir com acompanhamento. Ainda não enviar a estrutura nova por FTP antes de
+mover a estrutura antiga no passo 2. Caso admin/ já exista no servidor, parar e
+rever o conteúdo em vez de sobrescrever ou misturar diretórios.
+O Tavski terá uma interrupção entre parar o serviço e concluir a migração.
+
+1. BACKUP, mantendo tudo intacto:
+   tar --exclude=node_modules -czf "/root/tavski-before-admin-$(date +%Y%m%d-%H%M%S).tar.gz" -C /home/www/dev3.memogadget.com/public_html tavski
+   cp -L /etc/apache2/sites-enabled/dev3.memogadget.com-le-ssl.conf "/root/dev3-before-admin-$(date +%Y%m%d-%H%M%S).conf"
+   Guardar também a configuração atual do serviço:
+   systemctl cat tavski-dev3.service > "/root/tavski-service-before-admin-$(date +%Y%m%d-%H%M%S).txt"
+
+2. MOVER A INSTALAÇÃO EXISTENTE, sem eliminar ficheiros:
+   cd /home/www/dev3.memogadget.com/public_html/tavski && test -f package.json && test ! -e admin && test ! -L admin && systemctl stop tavski-dev3.service && mkdir admin && find . -mindepth 1 -maxdepth 1 ! -name admin ! -name .git ! -name .gitignore -exec mv -t admin -- {} +
+   Confirmar antes de avançar:
+   test -f admin/package.json && test -f admin/.env && echo "Estrutura movida"
+
+3. FTP:
+   Enviar index.html da raiz para /home/www/dev3.memogadget.com/public_html/tavski/index.html.
+   Enviar os fontes da pasta admin/ para /home/www/dev3.memogadget.com/public_html/tavski/admin/.
+   Enviar também os ficheiros ocultos de configuração de código se aplicável,
+   mas NÃO substituir .env nem bun.lock do servidor. Estes já foram movidos
+   com a instalação anterior. Não enviar .git, node_modules nem .output local.
+   Enviar o vite.config.ts NOVO em admin/: agora faz parte desta migração.
+   Os ficheiros novos de ops e scripts são necessários; não omitir essas pastas.
+
+4. BUILD:
+   cd /home/www/dev3.memogadget.com/public_html/tavski/admin
+   npm run build
+   Só avançar se o build terminar sem erros. Sem dependências novas.
+
+5. PREPARAR O SERVIÇO, sem reiniciar outros serviços:
+   test ! -e /etc/systemd/system/tavski-dev3.service.d/layout.conf && install -m 0644 ops/tavski-admin.conf /etc/systemd/system/tavski-dev3.service.d/layout.conf
+   Se layout.conf já existir, parar e rever/fazer backup; não sobrescrever.
+   systemd-analyze verify /etc/systemd/system/tavski-dev3.service
+
+6. PREPARAR APACHE:
+   /opt/tavski/bin/node scripts/configure-admin-apache.mjs --check
+   Verifica que o VirtualHost é exclusivamente do DEV3 e que as regras antigas
+   são as esperadas. Não altera ficheiros. Se falhar, parar e rever o resultado.
+   Depois:
+   /opt/tavski/bin/node scripts/configure-admin-apache.mjs --apply
+   Guarda backup privado em /root/tavski-admin-apache-*, acrescenta
+   /etc/apache2/tavski/admin.conf e substitui só as regras Tavski do VirtualHost
+   por Include desse ficheiro. Preserva o link de sites-enabled, SSL e as outras
+   diretivas. Valida apache2ctl -t e restaura o VirtualHost se a validação falhar.
+   Não recarrega Apache automaticamente.
+
+7. APLICAR:
+   systemctl daemon-reload && systemctl restart tavski-dev3.service
+   systemctl status tavski-dev3.service --no-pager -l
+   curl -sS -o /dev/null -H 'Accept: text/html' -w 'Admin local: HTTP %{http_code}\n' http://127.0.0.1:3103/tavski/admin/
+   O admin sem cookie deve responder 401 com o popup (não 503).
+   Só depois:
+   apache2ctl -t && systemctl reload apache2
+   O reload relê Apache inteiro; as novas regras estão apenas no VirtualHost
+   DEV3 e apenas no caminho Tavski. Não reiniciar Apache nem outros projetos.
+
+8. CONFIRMAR NUMA JANELA PRIVADA:
+   /tavski/ deve abrir TAVSKI sem popup ou login, mesmo se o Node estiver parado.
+   /tavski/admin/ deve pedir popup e depois o login existente.
+   Testar /tavski/admin/clients com F5 após login, idiomas, assets e saída.
+   /tavski/admin/.env e caminhos de fontes não devem devolver ficheiros.
+   Acesso público à API Supabase mantém as políticas atuais, como anteriormente.
+
+GESTÃO DA PALAVRA-PASSE DEPOIS DA MIGRAÇÃO
+  cd /home/www/dev3.memogadget.com/public_html/tavski/admin
+  /opt/tavski/bin/node scripts/tavski-access-password.mjs
+  systemctl restart tavski-dev3.service
+
+ATUALIZAÇÕES FUTURAS
+Executar npm run build a partir de admin/; reiniciar apenas tavski-dev3.service.
+O index.html público não exige build nem reiniciar Node quando for editado.
+Se o Supabase tiver lista de URLs de confirmação autorizadas, atualizar o destino
+para https://dev3.memogadget.com/tavski/admin/ quando houver acesso administrativo.
+
+VALIDAÇÃO LOCAL
+TypeScript e 20 testes passaram; build Node em /tavski/admin/ concluído.
+Chrome/HTTPS local: landing HTTP 200 sem login nem chamadas Supabase; admin com
+popup nos cinco idiomas, cookie limitado a admin, login existente, rotação de
+palavra-passe, logout e layout móvel. Não foram feitas operações na DB real.
+Mantém-se o aviso React #418 preexistente em redirecionamentos para o login,
+documentado em ACCESS-GATE.txt. Não surgiu erro novo no fluxo.
+Teste da configuração Apache feito por transformação textual; a validação real
+apache2ctl -t é obrigatória no DEV3 e está incluída no assistente de migração.
+
+LISTA DE FICHEIROS
+Consultar ../FILE-CHANGES.txt para todas as origens e destinos, incluindo os
+ficheiros apenas movidos e os que também foram editados nesta reorganização.

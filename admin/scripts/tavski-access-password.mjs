@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 const deriveKey = promisify(scrypt);
-const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 export async function createAccessConfig(password) {
   if (typeof password !== "string" || password.length < 12 || password.length > 128 || !password.trim()) {

@@ -1,3 +1,6 @@
+ESTRUTURA ATUAL: aplicação em /tavski/admin/; landing pública em /tavski/.
+Consultar ADMIN-MIGRATION.txt. Os caminhos antigos abaixo são um registo histórico.
+
 TAVSKI — Instalação no DEV3
 Registo: 23/11/2026
 

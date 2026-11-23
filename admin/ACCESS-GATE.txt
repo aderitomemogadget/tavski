@@ -1,3 +1,6 @@
+ESTRUTURA ATUAL: aplicação em /tavski/admin/; landing pública em /tavski/.
+Consultar ADMIN-MIGRATION.txt. Os caminhos antigos abaixo são um registo histórico.
+
 TAVSKI — Palavra-passe adicional antes do login
 Preparado em 23/11/2026. Não instalado nem ativado no DEV3 por esta alteração.
 

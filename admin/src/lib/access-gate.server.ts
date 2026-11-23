@@ -9,7 +9,7 @@ const deriveKey = (password: string, salt: string) => new Promise<Buffer>((resol
     if (error) reject(error); else resolve(key);
   });
 });
-const cookieName = "__Secure-tavski_access";
+const cookieName = "__Secure-tavski_admin_access";
 const sessionSeconds = 8 * 60 * 60;
 const attemptWindow = 10 * 60 * 1000;
 
@@ -42,7 +42,7 @@ function signature(payload: string, config: AccessConfig) {
   return createHmac("sha256", Buffer.from(config.signingKey, "hex")).update(payload).digest();
 }
 
-function hasAccess(request: Request, config: AccessConfig, now: number) {
+function hasAccess(request: Request, config: AccessConfig, now: number, basePath: string) {
   const raw = request.headers.get("cookie") ?? "";
   if (raw.length > 16384) return false;
   const values = raw.split(";").map((part) => part.trim()).filter((part) => part.startsWith(`${cookieName}=`));
@@ -56,15 +56,15 @@ function hasAccess(request: Request, config: AccessConfig, now: number) {
   try {
     const claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
     const seconds = Math.floor(now / 1000);
-    return claims.v === 1 && Number.isInteger(claims.iat) && Number.isInteger(claims.exp)
+    return claims.v === 1 && claims.scope === basePath && Number.isInteger(claims.iat) && Number.isInteger(claims.exp)
       && claims.iat <= seconds + 60 && claims.exp > seconds && claims.exp > claims.iat
       && claims.exp <= claims.iat + sessionSeconds;
   } catch { return false; }
 }
 
-function createToken(config: AccessConfig, now: number) {
+function createToken(config: AccessConfig, now: number, basePath: string) {
   const iat = Math.floor(now / 1000);
-  const payload = Buffer.from(JSON.stringify({ v: 1, iat, exp: iat + sessionSeconds, nonce: randomBytes(16).toString("hex") })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({ v: 1, scope: basePath, iat, exp: iat + sessionSeconds, nonce: randomBytes(16).toString("hex") })).toString("base64url");
   return `${payload}.${signature(payload, config).toString("base64url")}`;
 }
 
@@ -118,7 +118,7 @@ export function createAccessGate(options: GateOptions) {
     try { config = await load(); }
     catch { return isEndpoint ? json(503, { error: "unavailable" }) : accessPopup(request, options.basePath, true); }
 
-    const authenticated = hasAccess(request, config, now());
+    const authenticated = hasAccess(request, config, now(), options.basePath);
     if (!isEndpoint) {
       if (authenticated) return null;
       if (request.method !== "GET" && request.method !== "HEAD") return json(401, { error: "access_required" });
@@ -160,7 +160,7 @@ export function createAccessGate(options: GateOptions) {
       const derived = await deriveKey(password, config.salt);
       if (!timingSafeEqual(derived, Buffer.from(config.hash, "hex"))) return json(401, { error: "incorrect_password" });
       attempts.delete(client);
-      return json(200, { authenticated: true }, { "Set-Cookie": cookie(createToken(config, now()), options.basePath) });
+      return json(200, { authenticated: true }, { "Set-Cookie": cookie(createToken(config, now(), options.basePath), options.basePath) });
     } finally { inFlight--; }
   };
 }
