@@ -2,6 +2,16 @@
 // Translation order: Portuguese (Portugal), French, Spanish, German.
 export const messages = {
   "Language": ["Idioma", "Langue", "Idioma", "Sprache"],
+  "Restricted access": ["Acesso restrito", "Accès restreint", "Acceso restringido", "Geschützter Zugang"],
+  "Enter the additional password to continue to Tavski.": ["Introduza a palavra-passe adicional para aceder ao Tavski.", "Saisissez le mot de passe supplémentaire pour accéder à Tavski.", "Introduce la contraseña adicional para acceder a Tavski.", "Geben Sie das zusätzliche Passwort ein, um auf Tavski zuzugreifen."],
+  "Access password": ["Palavra-passe de acesso", "Mot de passe d’accès", "Contraseña de acceso", "Zugangspasswort"],
+  "Continue": ["Continuar", "Continuer", "Continuar", "Weiter"],
+  "Checking…": ["A verificar…", "Vérification…", "Verificando…", "Wird geprüft…"],
+  "JavaScript is required.": ["É necessário ativar o JavaScript.", "JavaScript doit être activé.", "Es necesario activar JavaScript.", "JavaScript muss aktiviert sein."],
+  "Incorrect access password.": ["Palavra-passe de acesso incorreta.", "Mot de passe d’accès incorrect.", "Contraseña de acceso incorrecta.", "Falsches Zugangspasswort."],
+  "Too many attempts. Please try again later.": ["Demasiadas tentativas. Tente novamente mais tarde.", "Trop de tentatives. Réessayez plus tard.", "Demasiados intentos. Inténtalo más tarde.", "Zu viele Versuche. Bitte später erneut versuchen."],
+  "Access verification unavailable. Please contact the administrator.": ["A verificação de acesso está indisponível. Contacte o administrador.", "La vérification d’accès est indisponible. Contactez l’administrateur.", "La verificación de acceso no está disponible. Contacta con el administrador.", "Die Zugangsprüfung ist nicht verfügbar. Wenden Sie sich an den Administrator."],
+  "Unable to verify access. Please try again.": ["Não foi possível verificar o acesso. Tente novamente.", "Impossible de vérifier l’accès. Réessayez.", "No se pudo verificar el acceso. Inténtalo de nuevo.", "Zugang konnte nicht geprüft werden. Bitte erneut versuchen."],
   "Dashboard": ["Painel", "Tableau de bord", "Panel", "Übersicht"],
   "Clients": ["Clientes", "Clients", "Clientes", "Kunden"],
   "Products": ["Produtos", "Produits", "Productos", "Produkte"],

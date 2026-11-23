@@ -1,4 +1,5 @@
 import { useI18n } from "@/lib/i18n";
+import { AccessGateMonitor } from "@/components/AccessGateMonitor";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -139,9 +140,9 @@ function RootComponent() {
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
   return (
-    <QueryClientProvider client={queryClient}>
+    <AccessGateMonitor><QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster position="top-right" richColors />
-    </QueryClientProvider>
+    </QueryClientProvider></AccessGateMonitor>
   );
 }

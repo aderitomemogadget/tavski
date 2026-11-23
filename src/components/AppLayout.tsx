@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
-import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, Users, Package, GitBranch, Archive, AlertTriangle, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +18,6 @@ const nav = [
 export function AppLayout() {
   const { t } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,7 +26,8 @@ export function AppLayout() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    await fetch(`${import.meta.env.BASE_URL}_access`, { method: "DELETE", credentials: "same-origin" }).catch(() => {});
+    window.location.replace(`${import.meta.env.BASE_URL}auth`);
   }
 
   return (

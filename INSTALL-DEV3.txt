@@ -205,3 +205,8 @@ src/routes/_app.timeline.index.tsx
 src/routes/auth.tsx
 
 Nenhum ficheiro foi alterado no servidor durante o desenvolvimento multilíngue.
+
+ATUALIZAÇÃO — POPUP COM PALAVRA-PASSE ADICIONAL
+Código preparado localmente. Ver ACCESS-GATE.txt para funcionamento, ficheiros,
+ativação por SSH e gestão da palavra-passe. Ainda não ativado no DEV3.
+Não necessita de SQL, alterações no Supabase ou na configuração Apache.

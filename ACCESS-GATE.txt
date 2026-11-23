@@ -1,0 +1,154 @@
+TAVSKI — Palavra-passe adicional antes do login
+Preparado em 23/11/2026. Não instalado nem ativado no DEV3 por esta alteração.
+
+FUNCIONAMENTO
+Popup próprio do Tavski, com uma palavra-passe comum, antes da aplicação React
+e do login Supabase existente. Interface em PT, FR, EN, ES e DE.
+Esta barreira usa duas palavras-passe; não é autenticação de dois fatores.
+Não altera utilizadores nem a base de dados Supabase.
+
+O servidor Node verifica a palavra-passe com scrypt (N=32768, r=8, p=1), salt
+aleatório de 32 bytes e comparação de tempo constante. O ficheiro privado contém
+o hash e uma chave aleatória de assinatura, nunca a palavra-passe em claro.
+Cookie __Secure-tavski_access: HttpOnly, Secure, SameSite=Strict, sem Domain,
+Path=/tavski/, validade assinada máxima de 8 horas. Não usa localStorage para
+guardar autorização ou palavra-passe. O browser pode restaurar cookies de sessão;
+o prazo de 8 horas continua a ser verificado pelo servidor.
+
+A barreira bloqueia pedidos às páginas e funções do servidor, não apenas um
+elemento visual. O popup funciona sem carregar React nem contactar Supabase.
+Desativar JavaScript não permite entrar e o formulário nunca envia a palavra-passe
+na URL. CSS/JavaScript públicos continuam a poder ser servidos pelo Alias Apache.
+
+As abas da aplicação já abertas verificam o acesso ao navegar, ao regressar à
+janela e a cada 30 segundos enquanto visíveis. Uma troca de palavra-passe com
+reinício invalida os cookies antigos; os ecrãs abertos voltam ao popup na próxima
+verificação. Conteúdo já descarregado não pode ser retirado do dispositivo.
+Terminar a sessão no Tavski termina também a autorização do popup quando o
+servidor está acessível. O login Supabase continua separado e obrigatório.
+
+IMPORTANTE: o frontend original comunica diretamente com Supabase. Esta barreira
+protege o acesso servido pelo DEV3; não acrescenta uma condição às políticas RLS
+da API Supabase. As proteções da base de dados continuam a depender do Supabase.
+
+LIMITES
+Cinco tentativas por IP observado pelo Apache a cada 10 minutos; resposta HTTP
+429 inclui Retry-After. Há ainda um limite global de 60 verificações por minuto
+e no máximo quatro verificações scrypt simultâneas. Os contadores são locais ao
+processo Node e reiniciam com o serviço; esta instalação usa uma única instância.
+TAVSKI_ACCESS_TRUST_PROXY=1 só deve ser usado mantendo o Node em 127.0.0.1:3103
+atrás do Apache. Considera o último IP de X-Forwarded-For, acrescentado pelo proxy,
+para não confiar em prefixos enviados pelo visitante.
+
+ESTADO E CONFIGURAÇÃO
+Por predefinição, TAVSKI_ACCESS_ENABLED não definido (ou 0) mantém o acesso anterior.
+Enviar os fontes por FTP e compilar NÃO ativa o popup sem a configuração abaixo.
+Com TAVSKI_ACCESS_ENABLED=1, a falta de configuração privada bloqueia o acesso com
+HTTP 503. Um valor inválido da variável também bloqueia o acesso.
+Não definir estas variáveis com prefixo VITE_; são exclusivamente do servidor.
+
+Ficheiro privado: /etc/tavski/access.json (root, modo 600; diretório modo 700).
+Drop-in exclusivo: /etc/systemd/system/tavski-dev3.service.d/access.conf.
+O systemd lê o ficheiro com LoadCredential e disponibiliza-o ao utilizador
+dinâmico do serviço por CREDENTIALS_DIRECTORY. A aplicação não precisa de root
+nem de acesso direto ao diretório /etc/tavski.
+Não colocar access.json no repositório, pasta pública, FTP ou chat.
+
+ATIVAÇÃO ORIENTADA NO DEV3
+Executar como root por SSH. Confirmar cada passo antes de avançar.
+Não substituir o vite.config.ts nem bun.lock específicos do DEV3.
+
+1. Antes de enviar os ficheiros, criar backup fora da pasta pública:
+   tar --exclude=node_modules -czf "/root/tavski-before-access-$(date +%Y%m%d-%H%M%S).tar.gz" -C /home/www/dev3.memogadget.com/public_html/tavski .
+
+2. Enviar apenas os ficheiros adicionados/alterados listados no fim deste
+   documento, mantendo a estrutura. Não enviar node_modules ou build Windows.
+
+3. Criar a palavra-passe de acesso no próprio servidor:
+   cd /home/www/dev3.memogadget.com/public_html/tavski
+   /opt/tavski/bin/node scripts/tavski-access-password.mjs
+   Introduzir e confirmar 12 a 128 caracteres. Nada é mostrado no terminal.
+   Não passar a palavra-passe por argumentos, variáveis ou pipes.
+
+4. Compilar usando a configuração de publicação que já está no DEV3:
+   npm run build
+   Validar o build antes de continuar; não reiniciar se houver erros.
+
+5. Instalar apenas o drop-in do Tavski:
+   install -d -m 0755 /etc/systemd/system/tavski-dev3.service.d
+   test ! -e /etc/systemd/system/tavski-dev3.service.d/access.conf && install -m 0644 ops/tavski-access.conf /etc/systemd/system/tavski-dev3.service.d/access.conf
+   Se access.conf já existir, parar e rever/fazer backup; não sobrescrever.
+   Conteúdo preparado:
+     [Service]
+     LoadCredential=tavski-access:/etc/tavski/access.json
+     Environment=TAVSKI_ACCESS_ENABLED=1
+     Environment=TAVSKI_PUBLIC_ORIGIN=https://dev3.memogadget.com
+     Environment=TAVSKI_ACCESS_TRUST_PROXY=1
+
+6. Validar a unidade, aplicar e verificar apenas o Tavski:
+   systemd-analyze verify /etc/systemd/system/tavski-dev3.service
+   systemctl daemon-reload
+   systemctl restart tavski-dev3.service
+   systemctl status tavski-dev3.service --no-pager -l
+   O daemon-reload relê definições do systemd; só se reinicia tavski-dev3.service.
+   Não é preciso alterar/recarregar Apache, PHP ou outros projetos.
+
+7. Abrir https://dev3.memogadget.com/tavski/ numa janela privada. Confirmar o
+   popup, uma tentativa incorreta, a passagem ao login atual e a saída de sessão.
+   Testar também /tavski/clients diretamente sem o cookie.
+
+ALTERAR A PALAVRA-PASSE POSTERIORMENTE
+  cd /home/www/dev3.memogadget.com/public_html/tavski
+  /opt/tavski/bin/node scripts/tavski-access-password.mjs
+  systemctl restart tavski-dev3.service
+O comando escreve o novo ficheiro de forma atómica, com uma chave nova de
+assinatura. O reinício é necessário para o systemd recarregar a credencial.
+Não requer recompilar, alterar o login Supabase ou mexer no Apache.
+
+RECUPERAÇÃO ADMINISTRATIVA
+Se a palavra-passe for esquecida, definir outra pelo mesmo comando SSH.
+Se for necessário desativar a barreira, editar APENAS o drop-in acima, substituindo
+TAVSKI_ACCESS_ENABLED=1 por TAVSKI_ACCESS_ENABLED=0 e retirando a linha LoadCredential
+se o ficheiro privado não existir. Depois daemon-reload e restart apenas do
+Tavski. Isto restaura o acesso através do login Supabase; exige administração SSH.
+
+TESTES LOCAIS
+  node node_modules/typescript/bin/tsc --noEmit
+  node --test tests/access-gate.test.cjs tests/i18n.test.cjs
+O teste de segurança cobre bloqueio de rotas/RPC, hash e rotação, cookie, expiração,
+manipulação, origem/CSRF, limites de tentativas e concorrência, configuração ausente
+e ausência de palavra-passe em claro. Os ficheiros privados de teste ficam no
+diretório temporário, fora do projeto, e são removidos após os testes.
+Resultado: TypeScript, build Node com base /tavski/ e 17 testes passaram.
+Teste no Chrome sobre HTTPS local, com Supabase simulado: cinco idiomas, acesso
+direto bloqueado antes de contactar Supabase, palavra-passe incorreta, cookie
+Secure/HttpOnly, login existente, troca de palavra-passe e reinício a bloquear uma
+aba aberta, saída de sessão, layout móvel e acesso bloqueado sem JavaScript.
+Verificado que hash, scrypt e configuração privada não entram nos bundles públicos.
+O comando interativo de gestão também foi testado num terminal, sem eco da palavra-passe.
+
+Observação anterior a esta alteração: o redirecionamento de uma rota protegida
+para /auth sem sessão pode produzir o aviso recuperável React #418 (hidratação).
+Foi reproduzido com o popup desligado e com __root.tsx original, sem o monitor
+novo. O login continua a funcionar; não foi alterado o mecanismo de hidratação
+do projeto nesta tarefa. Nenhum erro novo de execução/CSP foi observado no fluxo.
+
+FICHEIROS ADICIONADOS (7)
+ACCESS-GATE.txt
+ops/tavski-access.conf
+scripts/tavski-access-password.mjs
+src/components/AccessGateMonitor.tsx
+src/lib/access-gate.server.ts
+src/lib/access-popup.server.ts
+tests/access-gate.test.cjs
+
+FICHEIROS ALTERADOS (5)
+INSTALL-DEV3.txt
+src/components/AppLayout.tsx
+src/lib/i18n/messages.ts
+src/routes/__root.tsx
+src/server.ts
+
+Nenhum ficheiro .sql, credencial real ou configuração de outro projeto foi criado
+ou alterado. Os ficheiros privados e drop-in indicados são destinos de instalação,
+não alterações já executadas no servidor.
